@@ -1,7 +1,7 @@
 # Copyright 2017-2020 Rebirth contributors
 # Distributed under the terms of the GNU General Public License v2
 
-# This file is part of the DXX-Rebirth project.
+# This file is part of the DXX-Rebirth project <https://github.com/dxx-rebirth/dxx-rebirth/>.
 #
 # It is copyright by its individual contributors, as recorded in the
 # project's Git history.  See COPYING.txt at the top level for license
