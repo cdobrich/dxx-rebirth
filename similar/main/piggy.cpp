@@ -786,7 +786,7 @@ void piggy_new_pigfile(const std::span<char, FILENAME_LEN> pigname)
 				static_cast<void>(physfserr2);
 			}
 			else
-				Error("Failed to open required files <%s>, <" DEFAULT_PIGFILE_SHAREWARE ">: \"%s\", \"%s\"", pigname.data(), PHYSFS_getErrorByCode(physfserr), PHYSFS_getErrorByCode(physfserr2));
+				UserError("Failed to open required files <%s>, <" DEFAULT_PIGFILE_SHAREWARE ">: \"%s\", \"%s\"", pigname.data(), PHYSFS_getErrorByCode(physfserr), PHYSFS_getErrorByCode(physfserr2));
 			/* In an editor build, a pig can be built.  In a non-editor build,
 			 * Error was fatal.
 			 */
