@@ -1139,7 +1139,6 @@ void read_sndfile(const int required)
 
 properties_init_result properties_init(d_level_shared_robot_info_state &LevelSharedRobotInfoState)
 {
-	int ham_ok{0},snd_ok=0;
 	GameSounds = {};
 	for (const uint16_t i : xrange(std::size(GameBitmapXlat)))
 	{
@@ -1158,14 +1157,14 @@ properties_init_result properties_init(d_level_shared_robot_info_state &LevelSha
 		GameBitmapOffset[(bitmap_index{0})] = pig_bitmap_offset::None;
 	}
 
-	snd_ok = ham_ok = read_hamfile(LevelSharedRobotInfoState);
+	const auto ham_ok{read_hamfile(LevelSharedRobotInfoState)};
 
 	if (Piggy_hamfile_version >= pig_hamfile_version::_3)
 	{
 		read_sndfile(1);
 	}
 
-	return (ham_ok && snd_ok) ? properties_init_result::success : properties_init_result::failure;               //read ok
+	return ham_ok ? properties_init_result::success : properties_init_result::failure;               //read ok
 }
 #endif
 
