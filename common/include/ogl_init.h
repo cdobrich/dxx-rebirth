@@ -103,9 +103,9 @@ private:
 void ogl_urect(grs_canvas &, int left, int top, int right, int bot, color_palette_index color);
 constexpr int opengl_bitmap_use_src_bitmap = 0;
 constexpr int opengl_bitmap_use_dst_canvas = -1;
-bool ogl_ubitmapm_cs(grs_canvas &, int x, int y,int dw, int dh, grs_bitmap &bm, int c);
-bool ogl_ubitmapm_cs(grs_canvas &, int x, int y,int dw, int dh, grs_bitmap &bm, const ogl_colors::array_type &c);
-bool ogl_ubitmapm_cs(grs_canvas &, int x, int y, int dw, int dh, grs_bitmap &bm, const ogl_colors::array_type &c, bool fill);
+void ogl_ubitmapm_cs(grs_canvas &, int x, int y,int dw, int dh, grs_bitmap &bm, int c);
+void ogl_ubitmapm_cs(grs_canvas &, int x, int y,int dw, int dh, grs_bitmap &bm, const ogl_colors::array_type &c);
+void ogl_ubitmapm_cs(grs_canvas &, int x, int y, int dw, int dh, grs_bitmap &bm, const ogl_colors::array_type &c, bool fill);
 bool ogl_ubitblt_cs(grs_canvas &, int dw, int dh, int dx, int dy, int sx, int sy);
 bool ogl_ubitblt_i(unsigned dw, unsigned dh, unsigned dx, unsigned dy, unsigned sw, unsigned sh, unsigned sx, unsigned sy, const grs_bitmap &src, grs_bitmap &dest, opengl_texture_filter texfilt);
 bool ogl_ubitblt(unsigned w, unsigned h, unsigned dx, unsigned dy, unsigned sx, unsigned sy, const grs_bitmap &src, grs_bitmap &dest);

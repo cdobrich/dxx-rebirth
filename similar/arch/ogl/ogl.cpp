@@ -1968,16 +1968,16 @@ const ogl_colors::array_type &ogl_colors::init_palette(const unsigned c)
 	return a;
 }
 
-bool ogl_ubitmapm_cs(grs_canvas &canvas, int x, int y,int dw, int dh, grs_bitmap &bm, int c)
+void ogl_ubitmapm_cs(grs_canvas &canvas, int x, int y,int dw, int dh, grs_bitmap &bm, int c)
 {
 	ogl_colors color;
-	return ogl_ubitmapm_cs(canvas, x, y, dw, dh, bm, color.init(c), true);
+	ogl_ubitmapm_cs(canvas, x, y, dw, dh, bm, color.init(c), true);
 }
 
 /*
  * Menu / gauges 
  */
-bool ogl_ubitmapm_cs(grs_canvas &canvas, const int entry_x, const int entry_y, const int entry_dw, const int entry_dh, grs_bitmap &bm, const ogl_colors::array_type &color_array)
+void ogl_ubitmapm_cs(grs_canvas &canvas, const int entry_x, const int entry_y, const int entry_dw, const int entry_dh, grs_bitmap &bm, const ogl_colors::array_type &color_array)
 {
 	GLfloat u1,u2,v1,v2;
 	ogl_client_states<GLfloat, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY> cs;
@@ -2042,10 +2042,9 @@ bool ogl_ubitmapm_cs(grs_canvas &canvas, const int entry_x, const int entry_y, c
 	glColorPointer(4, GL_FLOAT, 0, color_array.data());
 	glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array.data());
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);//replaced GL_QUADS
-	return 0;
 }
 
-bool ogl_ubitmapm_cs(grs_canvas &canvas, int x0, int y0, int dw, int dh, grs_bitmap &bm, const ogl_colors::array_type &color_array, bool fill)
+void ogl_ubitmapm_cs(grs_canvas &canvas, int x0, int y0, int dw, int dh, grs_bitmap &bm, const ogl_colors::array_type &color_array, bool fill)
 {
 #if DXX_USE_STEREOSCOPIC_RENDER
 	// blit bitmap 2x for stereo viewport formats
@@ -2072,12 +2071,12 @@ bool ogl_ubitmapm_cs(grs_canvas &canvas, int x0, int y0, int dw, int dh, grs_bit
 			glDrawBuffer(GL_BACK_RIGHT);
 #endif
 		ogl_ubitmapm_cs(canvas, x, y, w, h, bm, color_array);
-		return 0;
+		return;
 	}
 #else
 	(void)fill;
 #endif
-	return ogl_ubitmapm_cs(canvas, x0, y0, dw, dh, bm, color_array);
+	ogl_ubitmapm_cs(canvas, x0, y0, dw, dh, bm, color_array);
 }
 
 // blit rectangular region from screen
