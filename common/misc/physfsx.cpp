@@ -25,7 +25,7 @@ constexpr std::array<file_extension_t, 1> archive_exts{{"dxa"}};
 std::pair<RAIINamedPHYSFS_File, PHYSFS_ErrorCode> PHYSFSX_openReadBuffered_internal(char *const filename, const char *const reported_filename)
 {
 	if (PHYSFSEXT_locateCorrectCase(filename) != PHYSFSX_case_search_result::success)
-		return {RAIINamedPHYSFS_File{}, PHYSFS_ERR_NOT_FOUND};
+		return {RAIINamedPHYSFS_File{nullptr, reported_filename}, PHYSFS_ERR_NOT_FOUND};
 	/* Use the specified filename in any error messages.  This may be the
 	 * modified filename or may be the original, depending on whether the
 	 * modified filename is a temporary.  Even if the original filename is
@@ -36,7 +36,7 @@ std::pair<RAIINamedPHYSFS_File, PHYSFS_ErrorCode> PHYSFSX_openReadBuffered_inter
 	 */
 	RAIIPHYSFS_File fp{PHYSFS_openRead(filename)};
 	if (!fp)
-		return {RAIINamedPHYSFS_File{}, PHYSFS_getLastErrorCode()};
+		return {RAIINamedPHYSFS_File{nullptr, reported_filename}, PHYSFS_getLastErrorCode()};
 	PHYSFS_uint64 bufSize;
 	bufSize = PHYSFS_fileLength(fp);
 	while (!PHYSFS_setBuffer(fp, bufSize) && bufSize)

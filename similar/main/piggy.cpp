@@ -650,16 +650,14 @@ void piggy_init_pigfile(const std::span<const char> filename)
 
 	piggy_close_file();             //close old pig if still open
 
-	auto &&[fp, physfserr] = PHYSFSX_openReadBuffered(filename.data());
-#if !DXX_USE_EDITOR
-	auto effective_filename = filename.data();
-#endif
-	//try pigfile for shareware
+	auto &&[fp, physfserr]{PHYSFSX_openReadBuffered(filename.data())};
 	if (!fp)
 	{
-		auto &&[fp2, physfserr2] = PHYSFSX_openReadBuffered(DEFAULT_PIGFILE_SHAREWARE);
+		[[unlikely]];
+		auto &&[fp2, physfserr2]{PHYSFSX_openReadBuffered(DEFAULT_PIGFILE_SHAREWARE)};
 		if (!fp2)
 		{
+			[[unlikely]];
 #if DXX_USE_EDITOR
 			static_cast<void>(physfserr);
 			static_cast<void>(physfserr2);
@@ -669,26 +667,33 @@ void piggy_init_pigfile(const std::span<const char> filename)
 #endif
 		}
 		fp = std::move(fp2);
-#if !DXX_USE_EDITOR
-		effective_filename = DEFAULT_PIGFILE_SHAREWARE;
-#endif
 	}
-	Piggy_fp = std::move(fp);
-	if (Piggy_fp) {                         //make sure pig is valid type file & is up-to-date
+	if (fp) {                         //make sure pig is valid type file & is up-to-date
+		[[likely]];
 		int pig_id,pig_version;
 
-		pig_id = PHYSFSX_readInt(Piggy_fp);
-		pig_version = PHYSFSX_readInt(Piggy_fp);
+		pig_id = PHYSFSX_readInt(fp);
+		pig_version = PHYSFSX_readInt(fp);
 		if (pig_id != PIGFILE_ID || pig_version != PIGFILE_VERSION) {
-			Piggy_fp.reset(); //out of date pig
-			                        //..so pretend it's not here
+			[[unlikely]];
+			/* The ID or version is wrong, so the pig file is out of date, or
+			 * not a PIG file at all.  It cannot be used.
+			 *
+			 * In an editor build, this is recoverable, so return.
+			 * In a non-editor build, this is fatal.
+			 */
 #if DXX_USE_EDITOR
 			return;         //if editor, ok to not have pig, because we'll build one
 		#else
-			Error("Cannot load PIG file: expected (id=%.8lx version=%.8x), found (id=%.8x version=%.8x) in \"%s\"", PIGFILE_ID, PIGFILE_VERSION, pig_id, pig_version, effective_filename);
+			Error("Cannot load PIG file: expected (id=%.8lx version=%.8x), found (id=%.8x version=%.8x) in \"%s\"", PIGFILE_ID, PIGFILE_VERSION, pig_id, pig_version, fp.filename);
 		#endif
 		}
 	}
+	else
+	{
+		UserError("Failed to load PIG file: \"%s\"", fp.filename);
+	}
+	Piggy_fp = std::move(fp);
 
 	std::copy_n(filename.data(), std::min(filename.size(), std::size(Current_pigfile) - 1), Current_pigfile.begin());
 
@@ -765,17 +770,16 @@ void piggy_new_pigfile(const std::span<char, FILENAME_LEN> pigname)
 
 	std::copy_n(pigname.data(), std::min(pigname.size(), std::size(Current_pigfile) - 1), Current_pigfile.begin());
 
-	auto &&[fp, physfserr] = PHYSFSX_openReadBuffered(pigname.data());
-#if !DXX_USE_EDITOR
-	const char *effective_filename = pigname.data();
-#endif
+	auto &&[fp, physfserr]{PHYSFSX_openReadBuffered(pigname.data())};
 	//try pigfile for shareware
 	if (!fp)
 	{
-		if (auto &&[fp2, physfserr2] = PHYSFSX_openReadBuffered(DEFAULT_PIGFILE_SHAREWARE); fp2)
+		[[unlikely]];
+		if (auto &&[fp2, physfserr2]{PHYSFSX_openReadBuffered(DEFAULT_PIGFILE_SHAREWARE)}; fp2)
 			fp = std::move(fp2);
 		else
 		{
+			[[unlikely]];
 			if constexpr (DXX_USE_EDITOR)
 			{
 				static_cast<void>(physfserr);
@@ -788,30 +792,35 @@ void piggy_new_pigfile(const std::span<char, FILENAME_LEN> pigname)
 			 */
 			return;
 		}
-#if !DXX_USE_EDITOR
-		effective_filename = DEFAULT_PIGFILE_SHAREWARE;
-#endif
 	}
-	Piggy_fp = std::move(fp);
-	if (Piggy_fp) {  //make sure pig is valid type file & is up-to-date
+	if (fp) {  //make sure pig is valid type file & is up-to-date
+		[[likely]];
 		int pig_id,pig_version;
 
-		pig_id = PHYSFSX_readInt(Piggy_fp);
-		pig_version = PHYSFSX_readInt(Piggy_fp);
+		pig_id = PHYSFSX_readInt(fp);
+		pig_version = PHYSFSX_readInt(fp);
 		if (pig_id != PIGFILE_ID || pig_version != PIGFILE_VERSION) {
-			Piggy_fp.reset();              //out of date pig
-			                        //..so pretend it's not here
-#if DXX_USE_EDITOR
-			return;         //if editor, ok to not have pig, because we'll build one
-		#else
-			Error("Cannot load PIG file: expected (id=%.8lx version=%.8x), found (id=%.8x version=%.8x) in \"%s\"", PIGFILE_ID, PIGFILE_VERSION, pig_id, pig_version, effective_filename);
-		#endif
+			[[unlikely]];
+			/* The ID or version is wrong, so the pig file is out of date, or
+			 * not a PIG file at all.  It cannot be used.
+			 *
+			 * In an editor build, this is recoverable, so return.
+			 * In a non-editor build, this is fatal.
+			 */
+			if constexpr (DXX_USE_EDITOR)
+			{
+				return;         //if editor, ok to not have pig, because we'll build one
+			}
+			else
+			{
+				UserError("Cannot load PIG file: expected (id=%.8lx version=%.8x), found (id=%.8x version=%.8x) in \"%s\"", PIGFILE_ID, PIGFILE_VERSION, pig_id, pig_version, fp.filename);
+			}
 		}
-		N_bitmaps = PHYSFSX_readInt(Piggy_fp);
+		N_bitmaps = PHYSFSX_readInt(fp);
 
 		header_size = N_bitmaps * sizeof(DiskBitmapHeader);
 
-		const unsigned data_start = header_size + PHYSFS_tell(Piggy_fp);
+		const unsigned data_start = header_size + PHYSFS_tell(fp);
 
 		for (unsigned i = 1; i <= N_bitmaps; ++i)
 		{
@@ -819,7 +828,7 @@ void piggy_new_pigfile(const std::span<char, FILENAME_LEN> pigname)
 			grs_bitmap *const bm = &GameBitmaps[bi];
 			int width;
 			
-			const auto bmh = DiskBitmapHeader_read(Piggy_fp);
+			const auto bmh = DiskBitmapHeader_read(fp);
 			const BitmapNameFromHeader bitmap_name(bmh);
 			const auto &temp_name = bitmap_name.name;
 			auto &abn = AllBitmaps[bi];
@@ -848,6 +857,7 @@ void piggy_new_pigfile(const std::span<char, FILENAME_LEN> pigname)
 	}
 	else
 		N_bitmaps = 0;          //no pigfile, so no bitmaps
+	Piggy_fp = std::move(fp);
 
 #if !DXX_USE_EDITOR
 
