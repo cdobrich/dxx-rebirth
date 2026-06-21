@@ -1291,6 +1291,9 @@ void piggy_bitmap_page_in(GameBitmaps_array &GameBitmaps, const bitmap_index ent
 
 	if (bmp->get_flag_mask(BM_FLAG_PAGED_OUT))
 	{
+		if (!Piggy_fp) [[unlikely]]
+			/* `Piggy_fp` will only be `nullptr` if a game data file is missing. */
+			return;
 		pause_game_world_time p;
 
 	ReDoIt:

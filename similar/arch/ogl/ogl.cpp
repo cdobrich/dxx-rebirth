@@ -343,11 +343,19 @@ static void ogl_texture_stats(grs_canvas &canvas)
 
 }
 
-static void ogl_bindbmtex(grs_bitmap &bm, bool edgepad){
+[[nodiscard]]
+static auto ogl_bindbmtex(grs_bitmap &bm, const bool edgepad)
+{
 	if (bm.gltexture==NULL || bm.gltexture->handle<=0)
 		ogl_loadbmtexture(bm, edgepad);
-	OGL_BINDTEXTURE(bm.gltexture->handle);
-	bm.gltexture->numrend++;
+	const auto gltexture{bm.gltexture};
+	if (gltexture) [[likely]]
+	{
+		/* `gltexture` will only be `nullptr` if a game data file is missing. */
+		OGL_BINDTEXTURE(gltexture->handle);
+		gltexture->numrend++;
+	}
+	return gltexture;
 }
 
 //gltexture MUST be bound first
@@ -926,8 +934,11 @@ void _g3_draw_tmap(grs_canvas &canvas, const std::span<g3_draw_tmap_point *const
 	if (tmap_drawer_ptr == draw_tmap) {
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		OGL_ENABLE(TEXTURE_2D);
-		ogl_bindbmtex(bm, 0);
-		ogl_texwrap(bm.gltexture, GL_REPEAT);
+		const auto gltexture{ogl_bindbmtex(bm, 0)};
+		if (!gltexture) [[unlikely]]
+			/* `gltexture` will only be `nullptr` if a game data file is missing. */
+			return;
+		ogl_texwrap(gltexture, GL_REPEAT);
 		r_tpolyc++;
 		color_alpha = (canvas.cv_fade_level >= GR_FADE_OFF) ? 1.0 : (1.0 - static_cast<float>(canvas.cv_fade_level) / (static_cast<float>(GR_FADE_LEVELS) - 1.0));
 	} else if (tmap_drawer_ptr == draw_tmap_flat) {
@@ -1001,8 +1012,11 @@ void _g3_draw_tmap_2(grs_canvas &canvas, const std::span<g3_draw_tmap_point *con
 	(void)cs;
 	r_tpolyc++;
 	OGL_ENABLE(TEXTURE_2D);
-	ogl_bindbmtex(bm, 1);
-	ogl_texwrap(bm.gltexture, GL_REPEAT);
+	const auto gltexture{ogl_bindbmtex(bm, 1)};
+	if (!gltexture) [[unlikely]]
+		/* `gltexture` will only be `nullptr` if a game data file is missing. */
+		return;
+	ogl_texwrap(gltexture, GL_REPEAT);
 
 	flatten_array<GLfloat, 4, MAX_POINTS_PER_POLY> color_array;
 	{
@@ -1086,8 +1100,11 @@ void g3_draw_bitmap(grs_canvas &canvas, const vms_vector &pos, const fix iwidth,
 	auto &i = std::get<0>(cs);
 
 	OGL_ENABLE(TEXTURE_2D);
-	ogl_bindbmtex(bm, 0);
-	ogl_texwrap(bm.gltexture,GL_CLAMP_TO_EDGE);
+	const auto gltexture{ogl_bindbmtex(bm, 0)};
+	if (!gltexture) [[unlikely]]
+		/* `gltexture` will only be `nullptr` if a game data file is missing. */
+		return;
+	ogl_texwrap(gltexture, GL_CLAMP_TO_EDGE);
 
 	const auto width = fixmul(iwidth, Matrix_scale.x);
 	const auto height = fixmul(iheight, Matrix_scale.y);
@@ -1871,6 +1888,9 @@ void ogl_loadbmtexture_f(grs_bitmap &rbm, const opengl_texture_filter texfilt, b
 {
 	assert(!rbm.get_flag_mask(BM_FLAG_PAGED_OUT));
 	assert(rbm.bm_data);
+	if (!rbm.bm_data) [[unlikely]]
+		/* `rbm.bm_data` will only be `nullptr` if a game data file is missing. */
+		return;
 	grs_bitmap *bm = &rbm;
 	while (const auto bm_parent = bm->bm_parent)
 		bm = bm_parent;
@@ -2002,8 +2022,11 @@ void ogl_ubitmapm_cs(grs_canvas &canvas, const int entry_x, const int entry_y, c
 	const GLfloat yf = 1.0 - (effective_dh + adjusted_canvas_y) / (static_cast<double>(last_height));
 
 	OGL_ENABLE(TEXTURE_2D);
-	ogl_bindbmtex(bm, 0);
-	ogl_texwrap(bm.gltexture,GL_CLAMP_TO_EDGE);
+	const auto gltexture{ogl_bindbmtex(bm, 0)};
+	if (!gltexture) [[unlikely]]
+		/* `gltexture` will only be `nullptr` if a game data file is missing. */
+		return;
+	ogl_texwrap(gltexture, GL_CLAMP_TO_EDGE);
 	
 	if (bm.bm_x==0){
 		u1=0;

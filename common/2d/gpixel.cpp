@@ -30,6 +30,9 @@ color_palette_index gr_ugpixel(const grs_bitmap &bitmap, int x, int y)
 	switch (bitmap.get_type())
 	{
 		case bm_mode::linear:
+			if (!bitmap.bm_data) [[unlikely]]
+				/* This should only happen if a game data file is missing. */
+				break;
 			return bitmap.bm_data[ bitmap.bm_rowsize*y + x ];
 		case bm_mode::ilbm:
 		case bm_mode::rgb15:

@@ -693,7 +693,11 @@ int check_effect_blowup(const d_level_shared_destructible_light_state &LevelShar
 #if DXX_BUILD_DESCENT == 1
 			if (gr_gpixel (*bm, x, y) != TRANSPARENCY_COLOR)
 #elif DXX_BUILD_DESCENT == 2
-			if (force_blowup_flag || (bm->bm_data[y*bm->bm_w+x] != TRANSPARENCY_COLOR))
+			if (force_blowup_flag || (
+				likely(bm->bm_data != nullptr) &&
+				/* `bm->bm_data` will only be `nullptr` if a game data file is missing. */
+				bm->bm_data[y*bm->bm_w+x] != TRANSPARENCY_COLOR)
+			)
 #endif
 			{		//not trans, thus on effect
 #if DXX_BUILD_DESCENT == 2

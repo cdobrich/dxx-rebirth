@@ -279,6 +279,12 @@ grs_bitmap &texmerge_get_cached_bitmap(GameBitmaps_array &GameBitmaps, const Tex
 #if DXX_USE_OGL
 	ogl_freebmtexture(mb);
 #endif
+	if (!bitmap_top.bm_data) [[unlikely]]
+		/* `bitmap_top.bm_data` will only be `nullptr` if a game data file is missing. */
+		return mb;
+	if (!bitmap_bottom.bm_data) [[unlikely]]
+		/* `bitmap_bottom.bm_data` will only be `nullptr` if a game data file is missing. */
+		return mb;
 
 	auto &expanded_top_bmp{*rle_expand_texture(bitmap_top)};
 	auto &expanded_bottom_bmp{*rle_expand_texture(bitmap_bottom)};

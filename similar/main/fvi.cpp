@@ -1208,6 +1208,9 @@ int check_trans_wall(const vms_vector &pnt, const vcsegptridx_t seg, const siden
 #if DXX_BUILD_DESCENT == 1
 	return (gr_gpixel (*bm, bmx, bmy) == TRANSPARENCY_COLOR);
 #elif DXX_BUILD_DESCENT == 2
+	if (!bm->bm_data) [[unlikely]]
+		/* `bm->bm_data` will only be `nullptr` if a game data file is missing. */
+		return 0;
 	return (bm->bm_data[bmy*bm->bm_w+bmx] == TRANSPARENCY_COLOR);
 #endif
 }

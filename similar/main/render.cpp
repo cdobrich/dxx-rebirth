@@ -309,6 +309,12 @@ static void render_face(grs_canvas &canvas, const shared_segment &segp, const si
 		}
 
 	assert(!bm->get_flag_mask(BM_FLAG_PAGED_OUT));
+	if (bm->get_flag_mask(BM_FLAG_PAGED_OUT)) [[unlikely]]
+		/* The bitmap should only be paged out at this point if a game data
+		 * file is missing.  If the game data is present, earlier code would
+		 * have paged in the bitmap.
+		 */
+		return;
 
 	std::array<g3s_lrgb, 4>		dyn_light;
 #if DXX_BUILD_DESCENT == 1
